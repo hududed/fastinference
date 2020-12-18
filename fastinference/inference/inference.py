@@ -48,32 +48,32 @@ def _decode_loss(vocab, dec_out, outs):
     return outs
 
 # Cell
-@delegates(GatherPredsCallback.__init__)
-@patch
-def get_preds(self:Learner, ds_idx=1, dl=None, with_input=False, with_decoded=False, with_loss=False, raw=False, act=None,
-                inner=False, reorder=True, cbs=None, **kwargs):
-    if dl is None: dl = self.dls[ds_idx].new(shuffled=False, drop_last=False)
-    if reorder and hasattr(dl, 'get_idxs'):
-        idxs = dl.get_idxs()
-        dl = dl.new(get_idxs = _ConstantFunc(idxs))
-    cb = GatherPredsCallback(with_input=with_input, with_loss=with_loss, **kwargs)
-    ctx_mgrs = self.validation_context(cbs=L(cbs)+[cb], inner=inner)
-    if with_loss: ctx_mgrs.append(self.loss_not_reduced())
-    with ContextManagers(ctx_mgrs):
-        self._do_epoch_validate(dl=dl)
-        if act is None: act = getattr(self.loss_func, 'activation', noop)
-        res = cb.all_tensors()
-        pred_i = 1 if with_input else 0
-        if res[pred_i] is not None:
-            res[pred_i] = act(res[pred_i]) if not raw else res[pred_i]
-            if with_decoded:
-                res.insert(pred_i+2, getattr(self.loss_func, 'decodes', noop)(res[pred_i]))
-        if reorder and hasattr(dl, 'get_idxs'): res = nested_reorder(res, tensor(idxs).argsort())
-        if with_decoded:
-            if hasattr(self.dls, 'categorize'): res[pred_i+1] = apply(getattr(self.dls, 'categorize', noop).decode, [*res[pred_i+2]])
-            if hasattr(self.dls, 'multi_categorize'): res[pred_i+1] = apply(getattr(self.dls, 'multi_categorize', noop).decode, [*res[pred_i+2]])
-        return tuple(res)
-    self._end_cleanup()
+#@delegates(GatherPredsCallback.__init__)
+#@patch
+#def get_preds(self:Learner, ds_idx=1, dl=None, with_input=False, with_decoded=False, with_loss=False, raw=False, act=None,
+#                inner=False, reorder=True, cbs=None, **kwargs):
+#    if dl is None: dl = self.dls[ds_idx].new(shuffled=False, drop_last=False)
+#    if reorder and hasattr(dl, 'get_idxs'):
+#       idxs = dl.get_idxs()
+#        dl = dl.new(get_idxs = _ConstantFunc(idxs))
+#    cb = GatherPredsCallback(with_input=with_input, with_loss=with_loss, **kwargs)
+#    ctx_mgrs = self.validation_context(cbs=L(cbs)+[cb], inner=inner)
+#    if with_loss: ctx_mgrs.append(self.loss_not_reduced())
+#    with ContextManagers(ctx_mgrs):
+#        self._do_epoch_validate(dl=dl)
+#        if act is None: act = getattr(self.loss_func, 'activation', noop)
+#        res = cb.all_tensors()
+#        pred_i = 1 if with_input else 0
+#        if res[pred_i] is not None:
+#            res[pred_i] = act(res[pred_i]) if not raw else res[pred_i]
+#            if with_decoded:
+#                res.insert(pred_i+2, getattr(self.loss_func, 'decodes', noop)(res[pred_i]))
+#        if reorder and hasattr(dl, 'get_idxs'): res = nested_reorder(res, tensor(idxs).argsort())
+#        if with_decoded:
+#            if hasattr(self.dls, 'categorize'): res[pred_i+1] = apply(getattr(self.dls, 'categorize', noop).decode, [*res[pred_i+2]])
+#            if hasattr(self.dls, 'multi_categorize'): res[pred_i+1] = apply(getattr(self.dls, 'multi_categorize', noop).decode, [*res[pred_i+2]])
+#        return tuple(res)
+#    self._end_cleanup()
 
 # Cell
 @patch
