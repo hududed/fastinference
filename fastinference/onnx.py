@@ -12,7 +12,7 @@ from fastai.learner import Learner
 from fastcore.all import *
 import torch
 from torch import tensor, Tensor
-
+import numpy as np
 import onnxruntime as ort
 
 # Cell
